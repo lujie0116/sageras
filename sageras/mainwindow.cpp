@@ -272,6 +272,8 @@ void MainWindow::on_selectButton_clicked()
 
 void MainWindow::on_singleButton_clicked()
 {
+    QTime t;
+    t.start();//将此时间设置为当前时间
     QString inputFile = ui->inputPath->text()+"\\"+ui->fileList->currentItem()->text();
     QString outputFile = ui->outputFile->text();
 
@@ -297,10 +299,16 @@ void MainWindow::on_singleButton_clicked()
         ui->hint->append(getSystemTime()+'\n'+"inputFile: "+inputFile+'\n'+"outputFile: "+outputFile);
     else
         ui->hint->append(getSystemTime()+'\n'+"inputFile: "+inputFile+"导入出错");
+
+    //elapsed(): 返回自上次调用start()或restart()以来经过的毫秒数
+    ui->hint->append(getSystemTime()+'\n'+"处理结束,花费时间为"+QString::number(t.elapsed())+"ms");
 }
 
 void MainWindow::on_batchButton_clicked()
 {
+    QTime t;
+    t.start();//将此时间设置为当前时间
+
     QString path = ui->inputPath->text();
     QStringList strs = getFileNames(path);
     QString outputFile = ui->outputFile->text();
@@ -316,6 +324,7 @@ void MainWindow::on_batchButton_clicked()
     QPosition idx(row,col);
     QAxObject* excel = new QAxObject(this);
     connectComponent(excel);
+    int cnt=0;
     for(int i=0;i<strs.size();i++){
         QString inputFile=path+'\\'+strs[i];
 
@@ -328,6 +337,7 @@ void MainWindow::on_batchButton_clicked()
         dataStart=idx.trans(col);
         bool result = processFile(outputFile,excel,map,dataStart,itemStart,startRow);
         col++;
+        cnt++;
         if(result)
             ui->hint->append(getSystemTime()+'\n'+"inputFile: "+inputFile+'\n'+"outputFile: "+outputFile);
         else
@@ -340,8 +350,8 @@ void MainWindow::on_batchButton_clicked()
         delete excel;
         excel = NULL;
     }
-
-    ui->hint->append(getSystemTime()+'\n'+"批处理结束");
+    //elapsed(): 返回自上次调用start()或restart()以来经过的毫秒数
+    ui->hint->append(getSystemTime()+'\n'+"批处理结束,处理"+QString::number(cnt)+"个xlsx,花费时间为"+QString::number(t.elapsed())+"ms");
 }
 
 
