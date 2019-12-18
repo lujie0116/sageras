@@ -27,6 +27,12 @@ private slots:
 
     void on_openButton_clicked();
 
+    void on_clearLog_clicked();
+
+    void on_dataCol_textEdited(const QString &arg1);
+
+    void on_itemCol_textEdited(const QString &arg1);
+
 private:
     Ui::MainWindow *ui;
 };

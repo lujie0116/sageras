@@ -340,3 +340,21 @@ void MainWindow::on_batchButton_clicked()
 }
 
 
+
+void MainWindow::on_clearLog_clicked()
+{
+    QString blank="";
+    ui->hint->setText(blank);
+}
+
+void MainWindow::on_dataCol_textEdited(const QString &arg1)
+{
+    QString str=arg1.toUpper();
+    ui->dataCol->setText(str);
+}
+
+void MainWindow::on_itemCol_textEdited(const QString &arg1)
+{
+    QString str=arg1.toUpper();
+    ui->itemCol->setText(str);
+}

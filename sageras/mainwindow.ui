@@ -78,7 +78,7 @@
      <rect>
       <x>10</x>
       <y>180</y>
-      <width>301</width>
+      <width>461</width>
       <height>16</height>
      </rect>
     </property>
@@ -200,7 +200,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>B</string>
+     <string>A</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -246,6 +246,19 @@
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="clearLog">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>380</y>
+      <width>71</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>清空日志</string>
     </property>
    </widget>
   </widget>
