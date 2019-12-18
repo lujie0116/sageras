@@ -10,9 +10,12 @@ bool isSubsection(QString str){
     return idx!=-1;
 }
 bool isOther(QString str){
-    QString filter="其他";
-    int idx=str.indexOf(filter);
-    return idx==0;
+    QStringList strs={"其他","其它"};
+    for(int i=0;i<strs.size();i++){
+        int idx=str.indexOf(strs[i]);
+        if(idx!=-1) return true;
+    }
+    return false;
 }
 
 //连接控件
@@ -257,14 +260,12 @@ void MainWindow::on_openButton_clicked()
     QStringList strs = getFileNames(path);
     ui->fileList->addItems(strs);
     ui->hint->append(getSystemTime()+'\n'+"打开文件夹: "+path);
-
-    QPosition as(1,ui->startRow->text().toInt());
-    ui->hint->append(as.cell+'\n');
 }
 
 void MainWindow::on_selectButton_clicked()
 {
     QString path=getFileName();
+    path = QDir::toNativeSeparators(path);
     ui->outputFile->setText(path);
     ui->hint->append(getSystemTime()+'\n'+"outputFile:"+path);
 }
@@ -303,6 +304,7 @@ void MainWindow::on_batchButton_clicked()
     QString path = ui->inputPath->text();
     QStringList strs = getFileNames(path);
     QString outputFile = ui->outputFile->text();
+
     ui->hint->append(getSystemTime()+'\n'+"批处理: "+path);
     QString dataStart = ui->dataCol->text();
     QString itemStart= ui->itemCol->text();
@@ -316,6 +318,9 @@ void MainWindow::on_batchButton_clicked()
     connectComponent(excel);
     for(int i=0;i<strs.size();i++){
         QString inputFile=path+'\\'+strs[i];
+
+        if(inputFile==outputFile) continue;
+
         QMap<QString,QMap<QString,QString>> map;
         //连接控件
         preProcess(inputFile,map,excel);
