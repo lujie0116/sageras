@@ -274,8 +274,20 @@ void MainWindow::on_singleButton_clicked()
 {
     QTime t;
     t.start();//将此时间设置为当前时间
+    if(ui->fileList->currentItem()==NULL){
+        ui->hint->append(getSystemTime()+'\n'+"选择输入文件");
+        return ;
+    }
     QString inputFile = ui->inputPath->text()+"\\"+ui->fileList->currentItem()->text();
     QString outputFile = ui->outputFile->text();
+    if(outputFile==""){
+        ui->hint->append(getSystemTime()+'\n'+"选择输出文件");
+        return ;
+    }
+    if(inputFile==outputFile){
+        ui->hint->append(getSystemTime()+'\n'+"错误:输入输出为同一文件.");
+        return ;
+    }
 
     QMap<QString,QMap<QString,QString>> map;
     //连接控件
@@ -312,6 +324,14 @@ void MainWindow::on_batchButton_clicked()
     QString path = ui->inputPath->text();
     QStringList strs = getFileNames(path);
     QString outputFile = ui->outputFile->text();
+    if(strs.size()==0){
+        ui->hint->append(getSystemTime()+'\n'+"选择有效文件夹");
+        return ;
+    }
+    if(outputFile==""){
+        ui->hint->append(getSystemTime()+'\n'+"选择输出文件");
+        return ;
+    }
 
     ui->hint->append(getSystemTime()+'\n'+"批处理: "+path);
     QString dataStart = ui->dataCol->text();
