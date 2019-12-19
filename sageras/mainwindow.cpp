@@ -3,6 +3,7 @@
 #include <QFileDialog>
 #include <ActiveQt/QAxObject>
 #include <QDateTime>
+#include <QMessageBox>
 
 bool isSubsection(QString str){
     QString filter="--";
@@ -372,6 +373,7 @@ void MainWindow::on_batchButton_clicked()
     }
     //elapsed(): 返回自上次调用start()或restart()以来经过的毫秒数
     ui->hint->append(getSystemTime()+'\n'+"批处理结束,处理"+QString::number(cnt)+"个xlsx,花费时间为"+QString::number(t.elapsed())+"ms");
+    QMessageBox::information(NULL, "完成", "Content");
 }
 
 
