@@ -51,23 +51,8 @@ int stringToIntBy26Base(QString colName){
     }
     return column;
 }
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
-{
-    ui->setupUi(this);
-}
 
-MainWindow::~MainWindow()
-{
-    delete ui;
-}
-
-QString MainWindow::getFileName(){
-    return QFileDialog::getOpenFileName(this,tr("文件对话框"),"E:\\download",tr("excel文件(*.xlsx);;""文件(*)"));
-}
-
-void MainWindow::preProcess(QString path,QMap<QString,QMap<QString,QString>> &map,QAxObject* excel){
+void preProcess(QString path,QMap<QString,QMap<QString,QString>> &map,QAxObject* excel){
     if(path=="") return ;
 
     // step2: 打开工作簿
@@ -254,25 +239,7 @@ bool processFile(QString path,QAxObject* excel,QMap<QString,QMap<QString,QString
 
 }
 
-void MainWindow::on_openButton_clicked()
-{
-    ui->fileList->clear();
-    QString path = ui->inputPath->text();
-    QStringList strs = getFileNames(path);
-    ui->fileList->addItems(strs);
-    ui->hint->append(getSystemTime()+'\n'+"打开文件夹: "+path);
-}
-
-void MainWindow::on_selectButton_clicked()
-{
-    QString path=getFileName();
-    path = QDir::toNativeSeparators(path);
-    ui->outputFile->setText(path);
-    ui->hint->append(getSystemTime()+'\n'+"outputFile:"+path);
-}
-
-void MainWindow::on_singleButton_clicked()
-{
+void singleDeal(Ui::MainWindow *ui,MainWindow* p){
     QTime t;
     t.start();//将此时间设置为当前时间
     if(ui->fileList->currentItem()==NULL){
@@ -292,7 +259,7 @@ void MainWindow::on_singleButton_clicked()
 
     QMap<QString,QMap<QString,QString>> map;
     //连接控件
-    QAxObject* excel = new QAxObject(this);
+    QAxObject* excel = new QAxObject(p);
     connectComponent(excel);
     preProcess(inputFile,map,excel);
 
@@ -315,10 +282,10 @@ void MainWindow::on_singleButton_clicked()
 
     //elapsed(): 返回自上次调用start()或restart()以来经过的毫秒数
     ui->hint->append(getSystemTime()+'\n'+"处理结束,花费时间为"+QString::number(t.elapsed())+"ms");
+    QMessageBox::information(NULL, "完成", "完成");
 }
 
-void MainWindow::on_batchButton_clicked()
-{
+void batchDeal(Ui::MainWindow *ui,MainWindow* p){
     QTime t;
     t.start();//将此时间设置为当前时间
 
@@ -343,7 +310,7 @@ void MainWindow::on_batchButton_clicked()
     int row=startRow.toInt();
 
     QPosition idx(row,col);
-    QAxObject* excel = new QAxObject(this);
+    QAxObject* excel = new QAxObject(p);
     connectComponent(excel);
     int cnt=0;
     for(int i=0;i<strs.size();i++){
@@ -373,10 +340,51 @@ void MainWindow::on_batchButton_clicked()
     }
     //elapsed(): 返回自上次调用start()或restart()以来经过的毫秒数
     ui->hint->append(getSystemTime()+'\n'+"批处理结束,处理"+QString::number(cnt)+"个xlsx,花费时间为"+QString::number(t.elapsed())+"ms");
-    QMessageBox::information(NULL, "完成", "Content");
+    QMessageBox::information(NULL, "完成", "完成");
 }
 
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow)
+{
+    ui->setupUi(this);
+}
 
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+QString MainWindow::getFileName(){
+    return QFileDialog::getOpenFileName(this,tr("文件对话框"),"E:\\download",tr("excel文件(*.xlsx);;""文件(*)"));
+}
+
+void MainWindow::on_openButton_clicked()
+{
+    ui->fileList->clear();
+    QString path = ui->inputPath->text();
+    QStringList strs = getFileNames(path);
+    ui->fileList->addItems(strs);
+    ui->hint->append(getSystemTime()+'\n'+"打开文件夹: "+path);
+}
+
+void MainWindow::on_selectButton_clicked()
+{
+    QString path=getFileName();
+    path = QDir::toNativeSeparators(path);
+    ui->outputFile->setText(path);
+    ui->hint->append(getSystemTime()+'\n'+"outputFile:"+path);
+}
+
+void MainWindow::on_singleButton_clicked()
+{
+    singleDeal(ui,this);
+}
+
+void MainWindow::on_batchButton_clicked()
+{
+    batchDeal(ui,this);
+}
 
 void MainWindow::on_clearLog_clicked()
 {

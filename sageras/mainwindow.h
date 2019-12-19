@@ -14,7 +14,6 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
-    void preProcess(QString path,QMap<QString,QMap<QString,QString>> &map,QAxObject* excel);
     QString getFileName();
     ~MainWindow();
 
