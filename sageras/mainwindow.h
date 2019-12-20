@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <ActiveQt/QAxObject>
+#include "ExcelBase.h"
 
 namespace Ui {
 class MainWindow;
@@ -34,6 +35,8 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    QScopedPointer<ExcelBase> m_xls;
+    QList< QList<QVariant> > m_datas;
 };
 
 

@@ -28,12 +28,14 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     mythread.cpp \
-    pshare.cpp
+    pshare.cpp \
+    ExcelBase.cpp
 
 HEADERS += \
         mainwindow.h \
     mythread.h \
-    pshare.h
+    pshare.h \
+    ExcelBase.h
 
 FORMS += \
         mainwindow.ui
