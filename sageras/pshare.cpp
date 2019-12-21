@@ -4,12 +4,45 @@
 #include <QFileDialog>
 #include "ui_mainwindow.h"
 #include "mainwindow.h"
+#include "qposition.h"
+
+//进制转换
+int stringToIntBy26Base(QString colName){
+    int column = 0;
+    int strLen = colName.length();
+    for (int i=0,j=1; i<strLen; i++,j*=26) {
+        int temp = (int)(colName.toUpper().at(strLen - 1 - i).toLatin1() - 64);
+        column = column + temp * j;
+    }
+    return column;
+}
+//获取系统时间
+QString getSystemTime()
+{
+    QDateTime current_date_time = QDateTime::currentDateTime();
+    QString current_time = current_date_time.toString("hh:mm:ss.zzz ");
+    return current_time;
+}
+//打开对话框选择文件
+QString getOpenFileName(){
+    return QFileDialog::getOpenFileName(NULL,"文件对话框","E:\\download","excel文件(*.xlsx);;""文件(*)");
+}
+//输出path下excel文件
+QStringList getPathFileNames(const QString &path)
+{
+    QDir dir(path);
+    QStringList nameFilters;
+    nameFilters << "*.xlsx";
+    QStringList files = dir.entryList(nameFilters, QDir::Files|QDir::Readable, QDir::Name);
+    return files;
+}
 
 bool isSubsection(QString str){
     QString filter="--";
     int idx=str.indexOf(filter);
     return idx!=-1;
 }
+
 bool isOther(QString str){
     QStringList strs={"其他","其它"};
     for(int i=0;i<strs.size();i++){
@@ -24,32 +57,6 @@ void connectComponent(QAxObject* excel){
     excel->setControl("Excel.Application");  // 连接Excel控件
     excel->dynamicCall("SetVisible (bool Visible)", "false"); // 不显示窗体
     excel->setProperty("DisplayAlerts", false);  // 不显示任何警告信息。如果为true, 那么关闭时会出现类似"文件已修改，是否保存"的提示
-}
-
-QString getSystemTime()
-{
-    QDateTime current_date_time = QDateTime::currentDateTime();
-    QString current_time = current_date_time.toString("hh:mm:ss.zzz ");
-
-    return current_time;
-}
-
-QStringList getFileNames(const QString &path)
-{
-    QDir dir(path);
-    QStringList nameFilters;
-    nameFilters << "*.xlsx";
-    QStringList files = dir.entryList(nameFilters, QDir::Files|QDir::Readable, QDir::Name);
-    return files;
-}
-int stringToIntBy26Base(QString colName){
-    int column = 0;
-    int strLen = colName.length();
-    for (int i=0,j=1; i<strLen; i++,j*=26) {
-        int temp = (int)(colName.toUpper().at(strLen - 1 - i).toLatin1() - 64);
-        column = column + temp * j;
-    }
-    return column;
 }
 
 void preProcess(QString path,QMap<QString,QMap<QString,QString>> &map,QAxObject* excel){
@@ -289,7 +296,7 @@ void batchDeal(Ui::MainWindow *ui,MainWindow* p){
     t.start();//将此时间设置为当前时间
 
     QString path = ui->inputPath->text();
-    QStringList strs = getFileNames(path);
+    QStringList strs = getPathFileNames(path);
     QString outputFile = ui->outputFile->text();
     if(strs.size()==0){
         ui->hint->append(getSystemTime()+'\n'+"选择有效文件夹");
