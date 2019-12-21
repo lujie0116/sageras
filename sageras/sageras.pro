@@ -27,13 +27,19 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    mythread.cpp \
-    pshare.cpp
+    pshare.cpp \
+    qposition.cpp \
+    excelhandle.cpp \
+    excelbatchhandle.cpp \
+    baseexcel.cpp
 
 HEADERS += \
         mainwindow.h \
-    mythread.h \
-    pshare.h
+    pshare.h \
+    qposition.h \
+    excelhandle.h \
+    excelbatchhandle.h \
+    baseexcel.h
 
 FORMS += \
         mainwindow.ui

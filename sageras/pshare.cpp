@@ -66,11 +66,10 @@ void preProcess(QString path,QMap<QString,QMap<QString,QString>> &map,QAxObject*
     QAxObject* workbooks = excel->querySubObject("WorkBooks"); // 获取工作簿集合
 
     //————————————————按文件路径打开文件————————————————————
-    QAxObject* workbook = workbooks->querySubObject("Open(const QString&)", path);
+    QAxObject* workbook = workbooks->querySubObject("Open(QString, QVariant)", path, 0);
 
     // 获取打开的excel文件中所有的工作sheet
     QAxObject* worksheets = workbook->querySubObject("Sheets");
-
 
     //—————————————————Excel文件中表的个数:——————————————————
     int iWorkSheet = worksheets->property("Count").toInt();
@@ -246,7 +245,7 @@ bool processFile(QString path,QAxObject* excel,QMap<QString,QMap<QString,QString
 
 }
 
-void singleDeal(Ui::MainWindow *ui,MainWindow* p){
+void singleDeal(Ui::MainWindow *ui, MainWindow *p){
     QTime t;
     t.start();//将此时间设置为当前时间
     if(ui->fileList->currentItem()==NULL){
@@ -291,7 +290,7 @@ void singleDeal(Ui::MainWindow *ui,MainWindow* p){
     ui->hint->append(getSystemTime()+'\n'+"处理结束,花费时间为"+QString::number(t.elapsed())+"ms");
 }
 
-void batchDeal(Ui::MainWindow *ui,MainWindow* p){
+void batchDeal(Ui::MainWindow *ui, MainWindow *p){
     QTime t;
     t.start();//将此时间设置为当前时间
 
@@ -319,6 +318,8 @@ void batchDeal(Ui::MainWindow *ui,MainWindow* p){
     QAxObject* excel = new QAxObject(p);
     connectComponent(excel);
     int cnt=0;
+    ui->progressBar->setRange(0,strs.size());
+    ui->progressBar->setValue(0);
     for(int i=0;i<strs.size();i++){
         QString inputFile=path+'\\'+strs[i];
 
@@ -336,6 +337,7 @@ void batchDeal(Ui::MainWindow *ui,MainWindow* p){
             ui->hint->append(getSystemTime()+'\n'+"inputFile: "+inputFile+'\n'+"outputFile: "+outputFile+'\n'+"已完成"+QString::number(cnt)+"个,剩余"+QString::number(strs.size()-cnt)+"个");
         else
             ui->hint->append(getSystemTime()+'\n'+"inputFile: "+inputFile+"导入出错");
+        ui->progressBar->setValue(cnt);
     }
 
     excel->dynamicCall("Quit()");

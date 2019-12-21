@@ -1,7 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QFileDialog>
-#include "mythread.h"
+#include "excelhandle.h"
+#include "excelbatchhandle.h"
 #include "pshare.h"
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -9,6 +10,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->progressBar->setRange(0,100);
+    ui->progressBar->setValue(0);
 }
 
 MainWindow::~MainWindow()
@@ -16,22 +19,18 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-QString MainWindow::getFileName(){
-    return QFileDialog::getOpenFileName(this,tr("文件对话框"),"E:\\download",tr("excel文件(*.xlsx);;""文件(*)"));
-}
-
 void MainWindow::on_openButton_clicked()
 {
     ui->fileList->clear();
     QString path = ui->inputPath->text();
-    QStringList strs = getFileNames(path);
+    QStringList strs = getPathFileNames(path);
     ui->fileList->addItems(strs);
     ui->hint->append(getSystemTime()+'\n'+"打开文件夹: "+path);
 }
 
 void MainWindow::on_selectButton_clicked()
 {
-    QString path=getFileName();
+    QString path=getOpenFileName();
     path = QDir::toNativeSeparators(path);
     ui->outputFile->setText(path);
     ui->hint->append(getSystemTime()+'\n'+"outputFile:"+path);
@@ -39,13 +38,13 @@ void MainWindow::on_selectButton_clicked()
 
 void MainWindow::on_singleButton_clicked()
 {
-    MyThread1 *thread=new MyThread1(ui,this);
+    ExcelHandel *thread=new ExcelHandel(ui,this);
     thread->start();
 }
 
 void MainWindow::on_batchButton_clicked()
 {
-    MyThread2 *thread=new MyThread2(ui,this);
+    ExcelBatchHandel *thread=new ExcelBatchHandel(ui,this);
     thread->start();
 }
 
