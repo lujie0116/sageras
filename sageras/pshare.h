@@ -13,20 +13,20 @@
 int stringToIntBy26Base(QString colName);
 //获取系统时间
 QString getSystemTime();
+QString appendlog(QString msg);
 QString getOpenFileName();
 QStringList getPathFileNames(const QString &path);
+bool fileExist(QString &file);
 
 //判断excel字段
 bool isSubsection(QString str);
 bool isOther(QString str);
 
 void connectComponent(QAxObject* excel);
+void excelFree(QAxObject* excel);
 
 //处理excel
-void preProcess(QString path,QMap<QString,QMap<QString,QString>> &map,QAxObject* excel);
-bool processFile(QString path,QAxObject* excel,QMap<QString,QMap<QString,QString>> &map,QString &dataStart,QString &itemStart,QString &startRow);
-
-void singleDeal(Ui::MainWindow *ui,MainWindow* p);
-void batchDeal(Ui::MainWindow *ui,MainWindow* p);
+bool preProcess(QString path,QHash<QString,QHash<QString,QString>> &map,QAxObject* excel,QString &sheetName);
+bool processFile(QString path,QAxObject* excel,QHash<QString,QHash<QString,QString>> &map,QString &dataStart,QString &itemStart,QString &startRow,QString &sheetName);
 
 #endif // PSHARE_H
