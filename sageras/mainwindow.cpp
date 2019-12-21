@@ -38,14 +38,28 @@ void MainWindow::on_selectButton_clicked()
 
 void MainWindow::on_singleButton_clicked()
 {
-    ExcelHandel *thread=new ExcelHandel(ui,this);
-    thread->start();
+    ui->progressBar->setValue(0);
+    ExcelHandel* thread1=new ExcelHandel(ui,this);
+    connect(thread1,&ExcelHandel::message
+            ,this,&MainWindow::receiveMessage);
+    connect(thread1,&ExcelHandel::progress
+            ,this,&MainWindow::progress);
+    ui->singleButton->setEnabled(false);
+    ui->batchButton->setEnabled(false);
+    thread1->start();
 }
 
 void MainWindow::on_batchButton_clicked()
 {
-    ExcelBatchHandel *thread=new ExcelBatchHandel(ui,this);
-    thread->start();
+    ui->progressBar->setValue(0);
+    ExcelBatchHandel* thread2=new ExcelBatchHandel(ui,this);
+    connect(thread2,&ExcelBatchHandel::message
+            ,this,&MainWindow::receiveMessage);
+    connect(thread2,&ExcelBatchHandel::progress
+            ,this,&MainWindow::progress);
+    ui->singleButton->setEnabled(false);
+    ui->batchButton->setEnabled(false);
+    thread2->start();
 }
 
 void MainWindow::on_clearLog_clicked()
@@ -68,7 +82,12 @@ void MainWindow::on_itemCol_textEdited(const QString &arg1)
 
 void MainWindow::receiveMessage(const QString &str)
 {
-    ui->hint->append(str);
+    if(str=="single_finish"||str=="batch_finish"){
+        ui->batchButton->setEnabled(true);
+        ui->singleButton->setEnabled(true);
+    }
+    else
+        ui->hint->append(str);
 }
 
 void MainWindow::progress(int val)

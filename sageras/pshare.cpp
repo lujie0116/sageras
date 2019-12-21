@@ -23,6 +23,17 @@ QString getSystemTime()
     QString current_time = current_date_time.toString("hh:mm:ss.zzz ");
     return current_time;
 }
+
+bool fileExist(QString &file){
+    QFileInfo fileInfo(file);
+    return fileInfo.exists();
+}
+
+
+QString appendlog(QString msg){
+    return getSystemTime()+'\n'+msg;
+}
+
 //打开对话框选择文件
 QString getOpenFileName(){
     return QFileDialog::getOpenFileName(NULL,"文件对话框","E:\\download","excel文件(*.xlsx);;""文件(*)");
@@ -59,28 +70,40 @@ void connectComponent(QAxObject* excel){
     excel->setProperty("DisplayAlerts", false);  // 不显示任何警告信息。如果为true, 那么关闭时会出现类似"文件已修改，是否保存"的提示
 }
 
-void preProcess(QString path,QMap<QString,QMap<QString,QString>> &map,QAxObject* excel){
-    if(path=="") return ;
+void excelFree(QAxObject* excel){
+    excel->dynamicCall("Quit()");
+    if (excel)
+    {
+        delete excel;
+        excel = NULL;
+    }
+}
+
+bool preProcess(QString path,QHash<QString,QHash<QString,QString>> &map,QAxObject* excel,QString &sheetName){
+    if(path=="") return false;
 
     // step2: 打开工作簿
     QAxObject* workbooks = excel->querySubObject("WorkBooks"); // 获取工作簿集合
+    if(workbooks==NULL) return false;
 
     //————————————————按文件路径打开文件————————————————————
     QAxObject* workbook = workbooks->querySubObject("Open(QString, QVariant)", path, 0);
+    if(workbook==NULL) return false;
 
     // 获取打开的excel文件中所有的工作sheet
     QAxObject* worksheets = workbook->querySubObject("Sheets");
+    if(worksheets==NULL) return false;
 
     //—————————————————Excel文件中表的个数:——————————————————
     int iWorkSheet = worksheets->property("Count").toInt();
-    QString sheetName;
+    QString curSheetName;
     int curSheet;
     for(curSheet=1;curSheet<=iWorkSheet;curSheet++){
-        sheetName=worksheets->querySubObject("Item(int)", curSheet)->property("Name").toString();
-        if(sheetName=="G1-1") break;
+        curSheetName=worksheets->querySubObject("Item(int)", curSheet)->property("Name").toString();
+        if(curSheetName==sheetName) break;
     }
 
-    if(sheetName!="G1-1") return;
+    if(curSheetName!=sheetName) return false;
 
     // ————————————————获取第n个工作表 querySubObject("Item(int)", n);——————————
     QAxObject * worksheet = worksheets->querySubObject("Item(int)", curSheet);//本例获取第一个，最后参数填1
@@ -116,12 +139,14 @@ void preProcess(QString path,QMap<QString,QMap<QString,QString>> &map,QAxObject*
             if(item_flag&&str=="金额"){
                 moneyPosition.set(X.row,X.col);
                 total_flag=true;
+                break;
             }
         }
+        if(total_flag) break;
     }
-    if(!total_flag) return ;
+    if(!total_flag) return false;
 
-    QMap<QString,QString> subMap;
+    QHash<QString,QString> subMap;
     QString section, count;
     QString other="=0";
     for(int i=itemPosition.row+1;i<=intRow;i++){
@@ -144,6 +169,9 @@ void preProcess(QString path,QMap<QString,QMap<QString,QString>> &map,QAxObject*
             map.insert("其他",subMap);
             continue;
         }
+
+        if(section=="合计")
+            break;
 
         //判断有没有子项目
         QPosition next_item(i+1,itemPosition.col),next_money(i+1,moneyPosition.col);
@@ -177,25 +205,40 @@ void preProcess(QString path,QMap<QString,QMap<QString,QString>> &map,QAxObject*
 //    excel->dynamicCall("Quit()");
 //    workbook->dynamicCall("Save()");
     workbook->dynamicCall("Close()");
+    return true;
 }
 
-bool processFile(QString path,QAxObject* excel,QMap<QString,QMap<QString,QString>> &map,QString &dataStart,QString &itemStart,QString &startRow){
-    bool ret=false;
-    if(path=="") return ret;
+bool processFile(QString path,QAxObject* excel,QHash<QString,QHash<QString,QString>> &map,QString &dataStart,QString &itemStart,QString &startRow,QString &sheetName){
+    if(path=="") return false;
 
     // step2: 打开工作簿
     QAxObject* workbooks = excel->querySubObject("WorkBooks"); // 获取工作簿集合
+    if(workbooks==NULL) return false;
 
     //————————————————按文件路径打开文件————————————————————
     QAxObject* workbook = workbooks->querySubObject("Open(const QString&)", path);
+    if(workbook==NULL) return false;
 
     // 获取打开的excel文件中所有的工作sheet
     QAxObject * worksheets = workbook->querySubObject("WorkSheets");
-
+    if(worksheets==NULL) return false;
 
     //—————————————————Excel文件中表的个数:——————————————————
 
-    QAxObject * worksheet = worksheets->querySubObject("Item(int)", 1);//本例获取第一个，最后参数填1
+    int iWorkSheet = worksheets->property("Count").toInt();
+    QString curSheetName;
+    int curSheet;
+    for(curSheet=1;curSheet<=iWorkSheet;curSheet++){
+        curSheetName=worksheets->querySubObject("Item(int)", curSheet)->property("Name").toString();
+        if(curSheetName==sheetName) break;
+    }
+
+    if(curSheetName!=sheetName) return false;
+
+    // ————————————————获取第n个工作表 querySubObject("Item(int)", n);——————————
+    QAxObject * worksheet = worksheets->querySubObject("Item(int)", curSheet);//本例获取第一个，最后参数填1
+
+    if(worksheet==NULL) return false;
 
     QAxObject* usedrange = worksheet->querySubObject("UsedRange"); // sheet范围
     int RowStart = startRow.toInt(); // 起始行数
@@ -232,121 +275,17 @@ bool processFile(QString path,QAxObject* excel,QMap<QString,QMap<QString,QString
 
             targetPosition.set(i,moneyPosition.col);
             cellX = worksheet->querySubObject("Range(QVariant, QVariant)", targetPosition.cell);
-            cellX->dynamicCall("SetValue(const QVariant&)",QVariant(map[section]["--"]));
+            if(map[section].count("--")!=0)
+                cellX->dynamicCall("SetValue(const QVariant&)",QVariant(map[section]["--"]));
         }else{
             targetPosition.set(i,moneyPosition.col);
-            cellX = worksheet->querySubObject("Range(QVariant, QVariant)", targetPosition.cell);
-            cellX->dynamicCall("SetValue(const QVariant&)",QVariant(map[section][str]));
+            cellX = worksheet->querySubObject("Range(QVariant, QVariant)", targetPosition.cell);            
+            if(map[section].count(str)!=0)
+                cellX->dynamicCall("SetValue(const QVariant&)",QVariant(map[section][str]));
         }
     }
     workbook->dynamicCall("Save()");
     workbook->dynamicCall("Close()");
     return true;
 
-}
-
-void singleDeal(Ui::MainWindow *ui, MainWindow *p){
-
-//    emit progress(((float)count / m_runCount) * 100);
-//    emit message(QString("ThreadFromQThread::run times:%1").arg(count));
-
-    QTime t;
-    t.start();//将此时间设置为当前时间
-    if(ui->fileList->currentItem()==NULL){
-        ui->hint->append(getSystemTime()+'\n'+"选择输入文件");
-        return ;
-    }
-    QString inputFile = ui->inputPath->text()+"\\"+ui->fileList->currentItem()->text();
-    QString outputFile = ui->outputFile->text();
-    if(outputFile==""){
-        ui->hint->append(getSystemTime()+'\n'+"选择输出文件");
-        return ;
-    }
-    if(inputFile==outputFile){
-        ui->hint->append(getSystemTime()+'\n'+"错误:输入输出为同一文件.");
-        return ;
-    }
-
-    QMap<QString,QMap<QString,QString>> map;
-    //连接控件
-    QAxObject* excel = new QAxObject(p);
-    connectComponent(excel);
-    preProcess(inputFile,map,excel);
-
-    QString dataStart = ui->dataCol->text();
-    QString itemStart= ui->itemCol->text();
-    QString startRow = ui->startRow->text();
-
-    bool result = processFile(outputFile,excel,map,dataStart,itemStart,startRow);
-
-    excel->dynamicCall("Quit()");
-    if (excel)
-    {
-        delete excel;
-        excel = NULL;
-    }
-    if(result)
-        ui->hint->append(getSystemTime()+'\n'+"inputFile: "+inputFile+'\n'+"outputFile: "+outputFile);
-    else
-        ui->hint->append(getSystemTime()+'\n'+"inputFile: "+inputFile+"导入出错");
-
-    //elapsed(): 返回自上次调用start()或restart()以来经过的毫秒数
-    ui->hint->append(getSystemTime()+'\n'+"处理结束,花费时间为"+QString::number(t.elapsed())+"ms");
-}
-
-void batchDeal(Ui::MainWindow *ui, MainWindow *p){
-    QTime t;
-    t.start();//将此时间设置为当前时间
-
-    QString path = ui->inputPath->text();
-    QStringList strs = getPathFileNames(path);
-    QString outputFile = ui->outputFile->text();
-    if(strs.size()==0){
-        ui->hint->append(getSystemTime()+'\n'+"选择有效文件夹");
-        return ;
-    }
-    if(outputFile==""){
-        ui->hint->append(getSystemTime()+'\n'+"选择输出文件");
-        return ;
-    }
-
-    ui->hint->append(getSystemTime()+'\n'+"批处理: "+path);
-    QString dataStart = ui->dataCol->text();
-    QString itemStart= ui->itemCol->text();
-    QString startRow = ui->startRow->text();
-
-    int col=stringToIntBy26Base(dataStart);
-    int row=startRow.toInt();
-
-    QPosition idx(row,col);
-    QAxObject* excel = new QAxObject(p);
-    connectComponent(excel);
-    int cnt=0;
-    for(int i=0;i<strs.size();i++){
-        QString inputFile=path+'\\'+strs[i];
-
-        if(inputFile==outputFile) continue;
-
-        QMap<QString,QMap<QString,QString>> map;
-        //连接控件
-        preProcess(inputFile,map,excel);
-
-        dataStart=idx.trans(col);
-        bool result = processFile(outputFile,excel,map,dataStart,itemStart,startRow);
-        col++;
-        cnt++;
-        if(result)
-            ui->hint->append(getSystemTime()+'\n'+"inputFile: "+inputFile+'\n'+"outputFile: "+outputFile+'\n'+"已完成"+QString::number(cnt)+"个,剩余"+QString::number(strs.size()-cnt)+"个");
-        else
-            ui->hint->append(getSystemTime()+'\n'+"inputFile: "+inputFile+"导入出错");
-    }
-
-    excel->dynamicCall("Quit()");
-    if (excel)
-    {
-        delete excel;
-        excel = NULL;
-    }
-    //elapsed(): 返回自上次调用start()或restart()以来经过的毫秒数
-    ui->hint->append(getSystemTime()+'\n'+"批处理结束,处理"+QString::number(cnt)+"个xlsx,花费时间为"+QString::number(t.elapsed())+"ms");
 }
