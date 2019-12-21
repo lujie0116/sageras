@@ -5,6 +5,9 @@
 #include "excelbatchhandle.h"
 #include "pshare.h"
 
+ExcelHandel* thread1=NULL;
+ExcelBatchHandel* thread2=NULL;
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -12,11 +15,25 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     ui->progressBar->setRange(0,100);
     ui->progressBar->setValue(0);
+
+    thread1=new ExcelHandel(ui,this);
+    connect(thread1,&ExcelHandel::message
+            ,this,&MainWindow::receiveMessage);
+    connect(thread1,&ExcelHandel::progress
+            ,this,&MainWindow::progress);
+
+    thread2=new ExcelBatchHandel(ui,this);
+    connect(thread2,&ExcelBatchHandel::message
+            ,this,&MainWindow::receiveMessage);
+    connect(thread2,&ExcelBatchHandel::progress
+            ,this,&MainWindow::progress);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete thread1;
+    delete thread2;
 }
 
 void MainWindow::on_openButton_clicked()
@@ -39,11 +56,6 @@ void MainWindow::on_selectButton_clicked()
 void MainWindow::on_singleButton_clicked()
 {
     ui->progressBar->setValue(0);
-    ExcelHandel* thread1=new ExcelHandel(ui,this);
-    connect(thread1,&ExcelHandel::message
-            ,this,&MainWindow::receiveMessage);
-    connect(thread1,&ExcelHandel::progress
-            ,this,&MainWindow::progress);
     ui->singleButton->setEnabled(false);
     ui->batchButton->setEnabled(false);
     thread1->start();
@@ -52,11 +64,6 @@ void MainWindow::on_singleButton_clicked()
 void MainWindow::on_batchButton_clicked()
 {
     ui->progressBar->setValue(0);
-    ExcelBatchHandel* thread2=new ExcelBatchHandel(ui,this);
-    connect(thread2,&ExcelBatchHandel::message
-            ,this,&MainWindow::receiveMessage);
-    connect(thread2,&ExcelBatchHandel::progress
-            ,this,&MainWindow::progress);
     ui->singleButton->setEnabled(false);
     ui->batchButton->setEnabled(false);
     thread2->start();
@@ -82,7 +89,10 @@ void MainWindow::on_itemCol_textEdited(const QString &arg1)
 
 void MainWindow::receiveMessage(const QString &str)
 {
-    if(str=="single_finish"||str=="batch_finish"){
+    if(str=="single_finish"){
+        ui->batchButton->setEnabled(true);
+        ui->singleButton->setEnabled(true);
+    }else if(str=="batch_finish"){
         ui->batchButton->setEnabled(true);
         ui->singleButton->setEnabled(true);
     }

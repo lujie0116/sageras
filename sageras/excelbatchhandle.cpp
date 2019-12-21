@@ -86,7 +86,7 @@ bool ExcelBatchHandel::deal(){
 
         if(inputFile==outputFile){
             failcnt++;
-            msg = "文件:"+inputFile+"为输出文件\n"+QString::number(successcnt)+"个,失败"+QString::number(failcnt)+"个,剩余"+QString::number(inputFiles.size()-i-1)+"个";
+            msg = "文件:"+inputFile+"为输出文件\n"+"成功"+QString::number(successcnt)+"个,失败"+QString::number(failcnt)+"个,剩余"+QString::number(inputFiles.size()-i-1)+"个";
             send(msg);
             finishcnt=successcnt+failcnt;
             emit progress(((float)finishcnt / inputFiles.size()) * 100);
