@@ -65,3 +65,13 @@ void MainWindow::on_itemCol_textEdited(const QString &arg1)
     QString str=arg1.toUpper();
     ui->itemCol->setText(str);
 }
+
+void MainWindow::receiveMessage(const QString &str)
+{
+    ui->hint->append(str);
+}
+
+void MainWindow::progress(int val)
+{
+    ui->progressBar->setValue(val);
+}

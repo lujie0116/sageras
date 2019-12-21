@@ -246,6 +246,10 @@ bool processFile(QString path,QAxObject* excel,QMap<QString,QMap<QString,QString
 }
 
 void singleDeal(Ui::MainWindow *ui, MainWindow *p){
+
+//    emit progress(((float)count / m_runCount) * 100);
+//    emit message(QString("ThreadFromQThread::run times:%1").arg(count));
+
     QTime t;
     t.start();//将此时间设置为当前时间
     if(ui->fileList->currentItem()==NULL){
@@ -318,8 +322,6 @@ void batchDeal(Ui::MainWindow *ui, MainWindow *p){
     QAxObject* excel = new QAxObject(p);
     connectComponent(excel);
     int cnt=0;
-    ui->progressBar->setRange(0,strs.size());
-    ui->progressBar->setValue(0);
     for(int i=0;i<strs.size();i++){
         QString inputFile=path+'\\'+strs[i];
 
@@ -337,7 +339,6 @@ void batchDeal(Ui::MainWindow *ui, MainWindow *p){
             ui->hint->append(getSystemTime()+'\n'+"inputFile: "+inputFile+'\n'+"outputFile: "+outputFile+'\n'+"已完成"+QString::number(cnt)+"个,剩余"+QString::number(strs.size()-cnt)+"个");
         else
             ui->hint->append(getSystemTime()+'\n'+"inputFile: "+inputFile+"导入出错");
-        ui->progressBar->setValue(cnt);
     }
 
     excel->dynamicCall("Quit()");

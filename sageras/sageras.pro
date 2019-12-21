@@ -29,17 +29,17 @@ SOURCES += \
         mainwindow.cpp \
     pshare.cpp \
     qposition.cpp \
+    baseexcel.cpp \
     excelhandle.cpp \
-    excelbatchhandle.cpp \
-    baseexcel.cpp
+    excelbatchhandle.cpp
 
 HEADERS += \
-        mainwindow.h \
+    mainwindow.h \
     pshare.h \
     qposition.h \
+    baseexcel.h \
     excelhandle.h \
-    excelbatchhandle.h \
-    baseexcel.h
+    excelbatchhandle.h
 
 FORMS += \
         mainwindow.ui
