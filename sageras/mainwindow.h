@@ -31,6 +31,10 @@ private slots:
 
     void on_itemCol_textEdited(const QString &arg1);
 
+    void progress(int val);
+
+    void receiveMessage(const QString& str);
+
 private:
     Ui::MainWindow *ui;
 };
