@@ -47,7 +47,7 @@ void MainWindow::on_openButton_clicked()
 
 void MainWindow::on_selectButton_clicked()
 {
-    QString path=getOpenFileName();
+    QString path=getOpenFileName(this);
     path = QDir::toNativeSeparators(path);
     ui->outputFile->setText(path);
     ui->hint->append(getSystemTime()+'\n'+"outputFile:"+path);

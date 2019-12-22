@@ -29,13 +29,18 @@ bool fileExist(QString &file){
     return fileInfo.exists();
 }
 
+void getFileNametoTitle(QString &str,QString &num,QString &name){
+    num=str.mid(0,3);
+    int start=str.lastIndexOf('-')+1;
+    name=str.mid(start,str.size()-start);
+}
 
 QString appendlog(QString msg){
     return getSystemTime()+'\n'+msg;
 }
 
 //打开对话框选择文件
-QString getOpenFileName(){
+QString getOpenFileName(QWidget *parent){
     return QFileDialog::getOpenFileName(NULL,"文件对话框","E:\\download","excel文件(*.xlsx);;""文件(*)");
 }
 //输出path下excel文件

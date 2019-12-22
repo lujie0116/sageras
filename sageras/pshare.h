@@ -14,9 +14,10 @@ int stringToIntBy26Base(QString colName);
 //获取系统时间
 QString getSystemTime();
 QString appendlog(QString msg);
-QString getOpenFileName();
+QString getOpenFileName(QWidget *parent);
 QStringList getPathFileNames(const QString &path);
 bool fileExist(QString &file);
+void getFileNametoTitle(QString &src,QString &num,QString &name);
 
 //判断excel字段
 bool isSubsection(QString str);
