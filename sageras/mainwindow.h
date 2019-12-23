@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include <ActiveQt/QAxObject>
+#include "excelhandle.h"
+#include "excelbatchhandle.h"
 
 namespace Ui {
 class MainWindow;
@@ -37,6 +39,8 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    ExcelHandel* thread1=NULL;
+    ExcelBatchHandel* thread2=NULL;
 };
 
 #endif // MAINWINDOW_H

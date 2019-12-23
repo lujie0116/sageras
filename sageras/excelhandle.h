@@ -3,7 +3,7 @@
 
 #include <QThread>
 #include <QTime>
-#include "mainwindow.h"
+#include "ui_mainwindow.h"
 
 class ExcelHandel : public QThread
 {
@@ -12,7 +12,7 @@ signals:
     void message(const QString& info);
     void progress(int present);
 public:
-    ExcelHandel(Ui::MainWindow *a,MainWindow* b);
+    ExcelHandel(Ui::MainWindow *a);
     ~ExcelHandel();
     void closeThread();
     void run();
@@ -23,7 +23,6 @@ public:
 private:
     volatile bool isStop;       //isStop是易失性变量，需要用volatile进行申明
     Ui::MainWindow *ui;
-    MainWindow* p;
 
     QString inputFile="";
     QString outputFile="";

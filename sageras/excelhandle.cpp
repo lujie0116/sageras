@@ -3,7 +3,7 @@
 #include <QMutex>
 #include "pshare.h"
 
-ExcelHandel::ExcelHandel(Ui::MainWindow *a,MainWindow* b):ui(a),p(b)
+ExcelHandel::ExcelHandel(Ui::MainWindow *a):ui(a)
 {
     isStop = false;
 }
@@ -81,7 +81,7 @@ bool ExcelHandel::getdata(){
 bool ExcelHandel::deal(){
     QHash<QString,QHash<QString,QString>> map;
     //连接控件
-    QAxObject* excel = new QAxObject(p);
+    QAxObject* excel = new QAxObject();
     connectComponent(excel);
     if(!preProcess(inputFile,map,excel,sheet)){
         msg="文件:"+inputFile+"读取出错";

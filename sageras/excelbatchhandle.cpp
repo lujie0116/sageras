@@ -4,7 +4,7 @@
 #include "pshare.h"
 #include "qposition.h"
 
-ExcelBatchHandel::ExcelBatchHandel(Ui::MainWindow *a,MainWindow* b):ui(a),p(b)
+ExcelBatchHandel::ExcelBatchHandel(Ui::MainWindow *a):ui(a)
 {
     isStop = false;
     inputFiles.clear();
@@ -70,7 +70,7 @@ bool ExcelBatchHandel::getdata(){
 
 bool ExcelBatchHandel::deal(){
     //连接控件
-    QAxObject* excel = new QAxObject(p);
+    QAxObject* excel = new QAxObject();
     connectComponent(excel);
     int successcnt=0;
     int failcnt=0;

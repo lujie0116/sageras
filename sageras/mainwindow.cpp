@@ -1,12 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QFileDialog>
-#include "excelhandle.h"
-#include "excelbatchhandle.h"
 #include "pshare.h"
-
-ExcelHandel* thread1=NULL;
-ExcelBatchHandel* thread2=NULL;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -16,13 +11,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->progressBar->setRange(0,100);
     ui->progressBar->setValue(0);
 
-    thread1=new ExcelHandel(ui,this);
+    thread1=new ExcelHandel(ui);
     connect(thread1,&ExcelHandel::message
             ,this,&MainWindow::receiveMessage);
     connect(thread1,&ExcelHandel::progress
             ,this,&MainWindow::progress);
 
-    thread2=new ExcelBatchHandel(ui,this);
+    thread2=new ExcelBatchHandel(ui);
     connect(thread2,&ExcelBatchHandel::message
             ,this,&MainWindow::receiveMessage);
     connect(thread2,&ExcelBatchHandel::progress
@@ -47,7 +42,7 @@ void MainWindow::on_openButton_clicked()
 
 void MainWindow::on_selectButton_clicked()
 {
-    QString path=getOpenFileName(this);
+    QString path=getOpenFileName();
     path = QDir::toNativeSeparators(path);
     ui->outputFile->setText(path);
     ui->hint->append(getSystemTime()+'\n'+"outputFile:"+path);

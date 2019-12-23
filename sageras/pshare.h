@@ -5,8 +5,6 @@
 #include <QDateTime>
 #include <QMessageBox>
 #include <QFileDialog>
-#include "ui_mainwindow.h"
-#include "mainwindow.h"
 
 
 //excel列进制转换
@@ -14,7 +12,7 @@ int stringToIntBy26Base(QString colName);
 //获取系统时间
 QString getSystemTime();
 QString appendlog(QString msg);
-QString getOpenFileName(QWidget *parent);
+QString getOpenFileName();
 QStringList getPathFileNames(const QString &path);
 bool fileExist(QString &file);
 void getFileNametoTitle(QString &src,QString &num,QString &name);

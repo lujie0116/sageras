@@ -3,7 +3,7 @@
 
 #include <QThread>
 #include <QTime>
-#include "mainwindow.h"
+#include "ui_mainwindow.h"
 
 class ExcelBatchHandel : public QThread
 {
@@ -12,7 +12,7 @@ signals:
     void message(const QString& info);
     void progress(int present);
 public:
-    ExcelBatchHandel(Ui::MainWindow *a,MainWindow* b);
+    ExcelBatchHandel(Ui::MainWindow *a);
     void closeThread();
     void run();
     void send(QString msg);
@@ -22,7 +22,6 @@ public:
 private:
     volatile bool isStop;       //isStop是易失性变量，需要用volatile进行申明
     Ui::MainWindow *ui;
-    MainWindow* p;
 
     QStringList inputFiles;
     QString inputPath="";

@@ -2,8 +2,7 @@
 #include <QDateTime>
 #include <QMessageBox>
 #include <QFileDialog>
-#include "ui_mainwindow.h"
-#include "mainwindow.h"
+#include "pshare.h"
 #include "qposition.h"
 
 //进制转换
@@ -40,7 +39,7 @@ QString appendlog(QString msg){
 }
 
 //打开对话框选择文件
-QString getOpenFileName(QWidget *parent){
+QString getOpenFileName(){
     return QFileDialog::getOpenFileName(NULL,"文件对话框","E:\\download","excel文件(*.xlsx);;""文件(*)");
 }
 //输出path下excel文件
