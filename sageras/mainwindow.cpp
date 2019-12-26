@@ -130,6 +130,11 @@ void MainWindow::on_toolButton_3_clicked()
     }
 }
 
+void MainWindow::on_batchStop_clicked()
+{
+    thread2->stop();
+}
+
 void MainWindow::on_toolButton_2_clicked()
 {
     int cnt=ui->listWidget->count();//项个数

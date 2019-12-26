@@ -17,6 +17,7 @@ void ExcelBatchHandel::closeThread()
 
 void ExcelBatchHandel::run()
 {
+    isStop = false;
     t.start();//将此时间设置为当前时间
 //    QString str = QString("%1->%2,thread id:%3").arg(__FILE__).arg(__FUNCTION__).arg((unsigned int)QThread::currentThreadId());
 //    send(str);
@@ -29,9 +30,15 @@ void ExcelBatchHandel::run()
         return ;
     }
     //    elapsed(): 返回自上次调用start()或restart()以来经过的毫秒数
+    isStop = false;
     msg="处理结束,花费时间为"+QString::number(t.elapsed())+"ms";
     send(msg);
     emit message("batch_finish");
+}
+
+void ExcelBatchHandel::stop()
+{
+    isStop = true;
 }
 
 bool ExcelBatchHandel::getdata(){
@@ -122,6 +129,10 @@ bool ExcelBatchHandel::deal(){
         col++;
         finishcnt=successcnt+failcnt;
         emit progress(((float)finishcnt / inputFiles.size()) * 100);
+        if(isStop) {
+            send("停止");
+            break;
+        }
     }
     excelFree(excel);
     return true;

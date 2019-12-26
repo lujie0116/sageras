@@ -15,6 +15,7 @@ public:
     ExcelBatchHandel(Ui::MainWindow *a);
     void closeThread();
     void run();
+    void stop();
     void send(QString msg);
     virtual bool getdata();
     virtual bool deal();
