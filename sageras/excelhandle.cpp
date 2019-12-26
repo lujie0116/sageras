@@ -38,18 +38,18 @@ void ExcelHandel::run()
 }
 
 bool ExcelHandel::getdata(){
-    if(ui->fileList->currentItem()==NULL){
-        msg = "选择输入文件";
-        send(msg);
-        return false;
-    }
-    inputFile = ui->inputPath->text()+"\\"+ui->fileList->currentItem()->text();
-    //检查文件是否存在
-    if(!fileExist(inputFile)){
-        msg = "输入文件不存在,请选择或检查路径";
-        send(msg);
-        return false;
-    }
+//    if(ui->fileList->currentItem()==NULL){
+//        msg = "选择输入文件";
+//        send(msg);
+//        return false;
+//    }
+//    inputFile = ui->inputPath->text()+"\\"+ui->fileList->currentItem()->text();
+//    //检查文件是否存在
+//    if(!fileExist(inputFile)){
+//        msg = "输入文件不存在,请选择或检查路径";
+//        send(msg);
+//        return false;
+//    }
     outputFile = ui->outputFile->text();
     if(outputFile==""){
         msg = "选择输出文件";

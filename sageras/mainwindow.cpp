@@ -33,10 +33,22 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_openButton_clicked()
 {
-    ui->fileList->clear();
     QString path = ui->inputPath->text();
     QStringList strs = getPathFileNames(path);
-    ui->fileList->addItems(strs);
+    QListWidgetItem *aItem; //每一行是一个QListWidgetItem
+
+    ui->listWidget->clear(); //清除项
+    for (int i=0; i<strs.size(); i++)
+    {
+        aItem=new QListWidgetItem(); //新建一个项
+        aItem->setText(strs[i]); //设置文字标签
+        aItem->setCheckState(Qt::Unchecked); //设置为选中状态
+        if (false) //可编辑, 设置flags
+            aItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEditable |Qt::ItemIsUserCheckable |Qt::ItemIsEnabled);
+        else//不可编辑, 设置flags
+            aItem->setFlags(Qt::ItemIsSelectable |Qt::ItemIsUserCheckable |Qt::ItemIsEnabled);
+        ui->listWidget->addItem(aItem); //增加一个项
+    }
     ui->hint->append(getSystemTime()+'\n'+"打开文件夹: "+path);
 }
 
@@ -50,16 +62,16 @@ void MainWindow::on_selectButton_clicked()
 
 void MainWindow::on_singleButton_clicked()
 {
-    ui->progressBar->setValue(0);
-    ui->singleButton->setEnabled(false);
-    ui->batchButton->setEnabled(false);
-    thread1->start();
+    ui->hint->append("按键已移除");
+//    ui->progressBar->setValue(0);
+//    ui->singleButton->setEnabled(false);
+//    ui->batchButton->setEnabled(false);
+//    thread1->start();
 }
 
 void MainWindow::on_batchButton_clicked()
 {
     ui->progressBar->setValue(0);
-    ui->singleButton->setEnabled(false);
     ui->batchButton->setEnabled(false);
     thread2->start();
 }
@@ -86,10 +98,8 @@ void MainWindow::receiveMessage(const QString &str)
 {
     if(str=="single_finish"){
         ui->batchButton->setEnabled(true);
-        ui->singleButton->setEnabled(true);
     }else if(str=="batch_finish"){
         ui->batchButton->setEnabled(true);
-        ui->singleButton->setEnabled(true);
     }
     else
         ui->hint->append(str);
@@ -98,4 +108,36 @@ void MainWindow::receiveMessage(const QString &str)
 void MainWindow::progress(int val)
 {
     ui->progressBar->setValue(val);
+}
+
+void MainWindow::on_toolButton_clicked()
+{
+    int cnt=ui->listWidget->count();//项个数
+    for (int i=0; i<cnt; i++)
+    {
+        QListWidgetItem *aItem=ui->listWidget->item(i);//获取一个项
+        aItem->setCheckState(Qt::Checked);//设置为选中
+    }
+}
+
+void MainWindow::on_toolButton_3_clicked()
+{
+    int cnt=ui->listWidget->count();//项个数
+    for (int i=0; i<cnt; i++)
+    {
+        QListWidgetItem *aItem=ui->listWidget->item(i);//获取一个项
+        aItem->setCheckState(Qt::Unchecked);//设置为选中
+    }
+}
+
+void MainWindow::on_toolButton_2_clicked()
+{
+    int cnt=ui->listWidget->count();//项个数
+    for (int i=0; i<cnt; i++)
+    {
+        QListWidgetItem *aItem=ui->listWidget->item(i);//获取一个项
+        Qt::CheckState flag = aItem->checkState();
+        flag = flag==Qt::Checked?Qt::Unchecked:Qt::Checked;
+        aItem->setCheckState(flag);//设置为选中
+    }
 }

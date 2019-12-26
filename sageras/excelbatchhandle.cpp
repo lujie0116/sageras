@@ -36,10 +36,18 @@ void ExcelBatchHandel::run()
 
 bool ExcelBatchHandel::getdata(){
     inputPath = ui->inputPath->text();
-    inputFiles = getPathFileNames(inputPath);
+    inputFiles.clear();
+
+    int cnt=ui->listWidget->count();//项个数
+    for (int i=0; i<cnt; i++)
+    {
+        QListWidgetItem *aItem=ui->listWidget->item(i);//获取一个项
+        if(aItem->checkState()==Qt::Checked)
+            inputFiles.append(aItem->text());
+    }
 
     if(inputFiles.size()==0){
-        msg = "文件夹为空,请检查";
+        msg = "请选择输入文件";
         send(msg);
         return false;
     }
