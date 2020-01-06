@@ -116,7 +116,7 @@ bool ExcelBatchHandel::deal(){
             continue;
         }
         dataStart=idx.trans(col);
-        if(processFile(outputFile,excel,map,dataStart,itemStart,startRow,sheet)){
+        if(processFile(outputFile,excel,map,dataStart,itemStart,startRow,sheet,inputFiles[i])){
             successcnt++;
             msg = "文件:"+inputFile+"导入成功\n"+"成功"+QString::number(successcnt)+"个,失败"+QString::number(failcnt)+"个,剩余"+QString::number(inputFiles.size()-i-1)+"个";
             send(msg);

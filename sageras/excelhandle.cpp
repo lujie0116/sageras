@@ -90,7 +90,7 @@ bool ExcelHandel::deal(){
         return false;
     }
 
-    bool result = processFile(outputFile,excel,map,dataStart,itemStart,startRow,sheet);
+    bool result = processFile(outputFile,excel,map,dataStart,itemStart,startRow,sheet,inputFile);
     excelFree(excel);
     if(result){
         msg = "文件:"+inputFile+"导入成功";

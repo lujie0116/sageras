@@ -212,7 +212,7 @@ bool preProcess(QString path,QHash<QString,QHash<QString,QString>> &map,QAxObjec
     return true;
 }
 
-bool processFile(QString path,QAxObject* excel,QHash<QString,QHash<QString,QString>> &map,QString &dataStart,QString &itemStart,QString &startRow,QString &sheetName){
+bool processFile(QString path,QAxObject* excel,QHash<QString,QHash<QString,QString>> &map,QString &dataStart,QString &itemStart,QString &startRow,QString &sheetName,QString inputFile){
     if(path=="") return false;
 
     // step2: 打开工作簿
@@ -261,6 +261,33 @@ bool processFile(QString path,QAxObject* excel,QHash<QString,QHash<QString,QStri
 
     QString section="";
     QPosition targetPosition;
+
+    QPosition file(1,dataCol);
+    cellX = worksheet->querySubObject("Range(QVariant, QVariant)", file.cell);
+    cellX->dynamicCall("SetValue(conts QVariant&)", inputFile);
+
+    //获取S10和长沙美东
+    int s=inputFile.indexOf(' ');
+    QString shopNum="";
+    if(shopNum!=-1){
+        QPosition X(2,dataCol);
+        cellX = worksheet->querySubObject("Range(QVariant, QVariant)", X.cell);
+        shopNum=inputFile.mid(0,s);
+        cellX->dynamicCall("SetValue(conts QVariant&)", shopNum);
+    }
+
+
+    s=inputFile.lastIndexOf('-');
+    QString shopName="";
+    if(shopName!=-1){
+        QPosition X(3,dataCol);
+        cellX = worksheet->querySubObject("Range(QVariant, QVariant)", X.cell);
+        shopName=inputFile.mid(s+1,inputFile.lastIndexOf('.')-s-1);
+        cellX->dynamicCall("SetValue(conts QVariant&)", shopName);
+    }
+
+
+    //存数值
     for(int i=RowStart;i<=intRow;i++){
         QPosition X(i,itemCol);
         cellX = worksheet->querySubObject("Range(QVariant, QVariant)", X.cell);
