@@ -30,16 +30,16 @@ SOURCES += \
     pshare.cpp \
     qposition.cpp \
     baseexcel.cpp \
-    excelhandle.cpp \
-    excelbatchhandle.cpp
+    excelbatchhandle.cpp \
+    copythread.cpp
 
 HEADERS += \
      mainwindow.h \
     pshare.h \
     qposition.h \
     baseexcel.h \
-    excelhandle.h \
-    excelbatchhandle.h
+    excelbatchhandle.h \
+    copythread.h
 
 FORMS += \
         mainwindow.ui

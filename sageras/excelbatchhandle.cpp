@@ -1,5 +1,4 @@
 #include "excelbatchhandle.h"
-#include <QDebug>
 #include <QMutex>
 #include "pshare.h"
 #include "qposition.h"

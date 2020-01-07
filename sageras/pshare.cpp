@@ -2,6 +2,7 @@
 #include <QDateTime>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QSettings>
 #include "pshare.h"
 #include "qposition.h"
 
@@ -320,3 +321,45 @@ bool processFile(QString path,QAxObject* excel,QHash<QString,QHash<QString,QStri
     return true;
 
 }
+
+bool readModule(QString path,QVariantList &headers){
+
+}
+
+bool readIni(QString path,QVariantList &headers){
+    QSettings setting("config.ini",QSettings::IniFormat);
+    setting.beginGroup("config");//beginGroup与下面endGroup 相对应，“config”是标记
+    setting.setIniCodec("UTF-8");
+    //读取ini
+    QString str=setting.value("headers").toString();
+    setting.endGroup();
+    QChar ch='\t';
+    divideStrtoList(str,ch,headers);
+    return true;
+
+}
+
+void divideStrtoList(QString src,QChar tag,QVariantList &headers){
+    int idx=0;
+    while(src.size()!=0){
+        idx=src.indexOf(tag);
+        headers.append(src.mid(0,idx));
+        if(idx==-1)
+            break;
+        src=src.mid(idx+1,src.size()-idx-1);
+    }
+}
+
+bool getListMap(const QVariantList &src,const QVariantList &target, QVariantList &map){
+    for(int i=0;i<src.size();i++){
+        for(int j=0;j<target.size();j++){
+            if(src[i]==target[j]){
+                map.append(j);
+                break;
+            }else
+                return false;
+        }
+    }
+   return true;
+}
+
