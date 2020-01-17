@@ -2,6 +2,7 @@
 #include <QDateTime>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QSettings>
 #include "pshare.h"
 #include "qposition.h"
 
@@ -319,4 +320,197 @@ bool processFile(QString path,QAxObject* excel,QHash<QString,QHash<QString,QStri
     workbook->dynamicCall("Close()");
     return true;
 
+}
+
+bool readModule(QString path,QVariantList &headers){
+
+}
+
+bool readIni(QString path,QVariantList &headers){
+    QSettings setting("./config.ini",QSettings::IniFormat);
+    setting.beginGroup("config");//beginGroup与下面endGroup 相对应，“config”是标记
+    setting.setIniCodec("UTF-8");
+    //读取ini
+    QString str=setting.value("headers").toString();
+    setting.endGroup();
+    QChar ch='\t';
+    divideStrtoList(str,ch,headers);
+    return !headers.empty();
+
+}
+
+void divideStrtoList(QString src,QChar tag,QVariantList &headers){
+    int idx=0;
+    while(src.size()!=0){
+        idx=src.indexOf(tag);
+        headers.append(src.mid(0,idx));
+        if(idx==-1)
+            break;
+        src=src.mid(idx+1,src.size()-idx-1);
+    }
+}
+
+bool getListMap(const QVariantList &src,const QVariantList &target, QList<int> &map){
+    //target多,src少
+    for(int i=0;i<target.size();i++){
+        for(int j=0;j<src.size();j++){
+            if(src[j]==target[i]){
+                map.append(j);
+                break;
+            }
+        }
+    }
+   return true;
+}
+
+bool getHeaderList(QString path,QAxObject* excel,QVariantList &headers,int &lessonNum){
+    if(path=="") return false;
+
+    // step2: 打开工作簿
+    QAxObject* workbooks = excel->querySubObject("WorkBooks"); // 获取工作簿集合
+    if(workbooks==NULL) return false;
+
+    //————————————————按文件路径打开文件————————————————————
+    QAxObject* workbook = workbooks->querySubObject("Open(QString, QVariant)", path, 0);
+    if(workbook==NULL) return false;
+
+    // 获取打开的excel文件中所有的工作sheet
+    QAxObject* worksheets = workbook->querySubObject("Sheets");
+    if(worksheets==NULL) return false;
+
+    // ————————————————获取第n个工作表 querySubObject("Item(int)", n);——————————
+    QAxObject * worksheet = worksheets->querySubObject("Item(int)", 1);//本例获取第一个，最后参数填1
+
+    QAxObject* usedrange = worksheet->querySubObject("UsedRange"); // sheet范围
+    int intRowStart = usedrange->property("Row").toInt(); // 起始行数
+    int intColStart = usedrange->property("Column").toInt();  // 起始列数
+
+    QAxObject *rows, *columns;
+    rows = usedrange->querySubObject("Rows");  // 行
+    columns = usedrange->querySubObject("Columns");  // 列
+
+    int intRow = rows->property("Count").toInt(); // 行数
+    int intCol = columns->property("Count").toInt();  // 列数
+
+    QAxObject* cellX = NULL; //获取单元格
+    QString str="";
+    for(int i=intColStart;i<=intCol;i++){
+        QPosition X(intRowStart,i);
+        cellX = worksheet->querySubObject("Range(QVariant, QVariant)", X.cell);
+        str = cellX->dynamicCall("Value2()").toString();
+        if(str=="科目编码")
+            lessonNum=i;
+        if(str=="")
+            break;
+        headers.append(str);
+    }
+    workbook->dynamicCall("Close()");
+
+    return true;
+}
+
+bool copyData(QString path,QString outputFile,QAxObject* excel,QList<int> &mappingList,int &rowStart,int colNum,QString target){
+    //===========================================
+    if(outputFile=="") return false;
+
+    // step2: 打开工作簿
+    QAxObject* workbooks2 = excel->querySubObject("WorkBooks"); // 获取工作簿集合
+    if(workbooks2==NULL) return false;
+
+    //————————————————按文件路径打开文件————————————————————
+    QAxObject* workbook2 = workbooks2->querySubObject("Open(QString, QVariant)", outputFile, 0);
+    if(workbook2==NULL) return false;
+
+    // 获取打开的excel文件中所有的工作sheet
+    QAxObject* worksheets2 = workbook2->querySubObject("Sheets");
+    if(worksheets2==NULL) return false;
+
+    // ————————————————获取第n个工作表 querySubObject("Item(int)", n);——————————
+    QAxObject * worksheet2 = worksheets2->querySubObject("Item(int)", 1);//本例获取第一个，最后参数填1
+    //===========================================
+
+
+    if(path=="") return false;
+
+    // step2: 打开工作簿
+    QAxObject* workbooks = excel->querySubObject("WorkBooks"); // 获取工作簿集合
+    if(workbooks==NULL) return false;
+
+    //————————————————按文件路径打开文件————————————————————
+    QAxObject* workbook = workbooks->querySubObject("Open(QString, QVariant)", path, 0);
+    if(workbook==NULL) return false;
+
+    // 获取打开的excel文件中所有的工作sheet
+    QAxObject* worksheets = workbook->querySubObject("Sheets");
+    if(worksheets==NULL) return false;
+
+    // ————————————————获取第n个工作表 querySubObject("Item(int)", n);——————————
+    QAxObject* worksheet = worksheets->querySubObject("Item(int)", 1);//本例获取第一个，最后参数填1
+
+    QAxObject* usedrange = worksheet->querySubObject("UsedRange"); // sheet范围
+
+    QVariant var = usedrange->dynamicCall("Value");
+
+    QVariantList varRows = var.toList();
+    QList<QList<QVariant> > res;
+    if(varRows.isEmpty())
+    {
+        return false;
+    }
+    const int rowCount = varRows.size();
+    QVariantList rowData;
+    for(int i=0;i<rowCount;++i)
+    {
+        rowData = varRows[i].toList();
+        res.push_back(rowData);
+    }
+
+    int intRowStart = usedrange->property("Row").toInt(); // 起始行数
+    int intColStart = usedrange->property("Column").toInt();  // 起始列数
+
+    QAxObject *rows, *columns;
+    rows = usedrange->querySubObject("Rows");  // 行
+    columns = usedrange->querySubObject("Columns");  // 列
+
+    int intRow = rows->property("Count").toInt(); // 行数
+    int intCol = columns->property("Count").toInt();  // 列数
+
+    QAxObject* cellX = NULL; //获取单元格
+    QAxObject* cellY = NULL; //获取单元格
+    QString str="";
+    QVariant temp;
+    for(int i=2;i<=intRow;i++){
+//        QPosition blank(i,1);
+//        cellX = worksheet->querySubObject("Range(QVariant, QVariant)", blank.cell);
+//        str = cellX->dynamicCall("Value2()").toString();
+//        if(str=="")
+//            break;
+
+//        blank.set(i,colNum);
+//        cellX = worksheet->querySubObject("Range(QVariant, QVariant)", blank.cell);
+//        str = cellX->dynamicCall("Value2()").toString();
+
+        str = res[i-1][colNum-1].toString();
+        if(str.indexOf(target)==-1)
+            continue;
+        for(int j=intColStart;j<=intCol;j++){
+            if(j>mappingList.size())
+                continue;
+            QPosition Y(rowStart,mappingList[j-1]+1);
+            cellY = worksheet2->querySubObject("Range(QVariant, QVariant)", Y.cell);
+
+            if(res[0][j-1].toString()=="记账日期"||res[0][j-1].toString()=="业务日期"){
+                temp = res[i-1][j-1];
+                cellY->dynamicCall("SetValue(conts QVariant&)", temp);
+            }else{
+                str = res[i-1][j-1].toString();
+                cellY->dynamicCall("SetValue(conts QVariant&)", str);
+            }
+        }
+        rowStart++;
+    }
+    workbook->dynamicCall("Close()");
+    workbook2->dynamicCall("Save()");
+    workbook2->dynamicCall("Close()");
+    return true;
 }

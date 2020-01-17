@@ -1,20 +1,20 @@
-#include "excelbatchhandle.h"
+#include "copythread.h"
 #include <QMutex>
 #include "pshare.h"
 #include "qposition.h"
 
-ExcelBatchHandel::ExcelBatchHandel(Ui::MainWindow *a):ui(a)
+CopyThread::CopyThread(Ui::MainWindow *a):ui(a)
 {
     isStop = false;
     inputFiles.clear();
 }
 
-void ExcelBatchHandel::closeThread()
+void CopyThread::closeThread()
 {
     isStop = true;
 }
 
-void ExcelBatchHandel::run()
+void CopyThread::run()
 {
     isStop = false;
     t.start();//将此时间设置为当前时间
@@ -35,12 +35,12 @@ void ExcelBatchHandel::run()
     emit message("batch_finish");
 }
 
-void ExcelBatchHandel::stop()
+void CopyThread::stop()
 {
     isStop = true;
 }
 
-bool ExcelBatchHandel::getdata(){
+bool CopyThread::getdata(){
     inputPath = ui->inputPath->text();
     inputFiles.clear();
 
@@ -70,32 +70,37 @@ bool ExcelBatchHandel::getdata(){
         return false;
     }
 
+    lessonNum = ui->lessonNum->text();
     sheet = ui->sheetName->text();
-    if(sheet==""){
-        msg = "工作表不能为空.";
-        send(msg);
-        return false;
-    }
+
     dataStart = ui->dataCol->text();
     itemStart= ui->itemCol->text();
     startRow = ui->startRow->text();
     return true;
 }
 
-bool ExcelBatchHandel::deal(){
+bool CopyThread::deal(){
     //连接控件
     QAxObject* excel = new QAxObject();
     connectComponent(excel);
+
     int successcnt=0;
     int failcnt=0;
     int finishcnt=0;
     int col=stringToIntBy26Base(dataStart);
     int row=startRow.toInt();
+    int targetNum=0;
+    //
+    //1.获取标准模板headers,并保存到list
+    QVariantList headers;
+    readIni(outputFile,headers);
+    //2.遍历所有filelist
 
-    QPosition idx(row,col);
+    //3.每个file,读取header,映射,
+    //
 
+    int rowStart=2;
     for(int i=0;i<inputFiles.size();i++){
-        QHash<QString,QHash<QString,QString>> map;
         QString inputFile=inputPath+'\\'+inputFiles[i];
 
         if(inputFile==outputFile){
@@ -106,7 +111,10 @@ bool ExcelBatchHandel::deal(){
             emit progress(((float)finishcnt / inputFiles.size()) * 100);
             continue;
         }
-        if(!preProcess(inputFile,map,excel,sheet)){
+
+        //读取inputfile文件headerlist
+        QVariantList inputHeaderList;
+        if(!getHeaderList(inputFile, excel, inputHeaderList,targetNum)){
             failcnt++;
             msg = "文件:"+inputFile+"读取出错\n"+"成功"+QString::number(successcnt)+"个,失败"+QString::number(failcnt)+"个,剩余"+QString::number(inputFiles.size()-i-1)+"个";
             send(msg);
@@ -114,8 +122,20 @@ bool ExcelBatchHandel::deal(){
             emit progress(((float)finishcnt / inputFiles.size()) * 100);
             continue;
         }
-        dataStart=idx.trans(col);
-        if(processFile(outputFile,excel,map,dataStart,itemStart,startRow,sheet,inputFiles[i])){
+
+        //MappingList,dataList
+
+        QList<int> mappingList;
+        if(!getListMap(headers,inputHeaderList,mappingList)){
+            failcnt++;
+            msg = "文件:"+inputFile+"表头不匹配\n"+"成功"+QString::number(successcnt)+"个,失败"+QString::number(failcnt)+"个,剩余"+QString::number(inputFiles.size()-i-1)+"个";
+            send(msg);
+            finishcnt=successcnt+failcnt;
+            emit progress(((float)finishcnt / inputFiles.size()) * 100);
+            continue;
+        }
+
+        if(copyData(inputFile,outputFile,excel,mappingList,rowStart,targetNum,lessonNum)){
             successcnt++;
             msg = "文件:"+inputFile+"导入成功\n"+"成功"+QString::number(successcnt)+"个,失败"+QString::number(failcnt)+"个,剩余"+QString::number(inputFiles.size()-i-1)+"个";
             send(msg);
@@ -137,6 +157,6 @@ bool ExcelBatchHandel::deal(){
     return true;
 }
 
-void ExcelBatchHandel::send(QString msg){
+void CopyThread::send(QString msg){
     emit message(appendlog(msg));
 }

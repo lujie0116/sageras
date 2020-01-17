@@ -27,5 +27,13 @@ void excelFree(QAxObject* excel);
 //处理excel
 bool preProcess(QString path,QHash<QString,QHash<QString,QString>> &map,QAxObject* excel,QString &sheetName);
 bool processFile(QString path,QAxObject* excel,QHash<QString,QHash<QString,QString>> &map,QString &dataStart,QString &itemStart,QString &startRow,QString &sheetName,QString inputFile);
+bool readModule(QString path,QVariantList &headers);
+bool getHeaderList(QString path,QAxObject* excel,QVariantList &headers,int &lessonNum);
+bool copyData(QString path,QString outputFile,QAxObject* excel,QList<int> &mappingList,int &rowStart,int colNum,QString target);
 
+//
+bool readIni(QString path,QVariantList &headers);
+void divideStrtoList(QString src,QChar tag,QVariantList &headers);
+
+bool getListMap(const QVariantList &src, const QVariantList &target, QList<int> &map);
 #endif // PSHARE_H

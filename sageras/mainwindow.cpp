@@ -11,10 +11,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->progressBar->setRange(0,100);
     ui->progressBar->setValue(0);
 
-    thread1=new ExcelHandel(ui);
-    connect(thread1,&ExcelHandel::message
+    thread1=new CopyThread(ui);
+    connect(thread1,&CopyThread::message
             ,this,&MainWindow::receiveMessage);
-    connect(thread1,&ExcelHandel::progress
+    connect(thread1,&CopyThread::progress
             ,this,&MainWindow::progress);
 
     thread2=new ExcelBatchHandel(ui);
@@ -27,8 +27,8 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
-    delete thread1;
     delete thread2;
+    delete thread1;
 }
 
 void MainWindow::on_openButton_clicked()
@@ -60,18 +60,10 @@ void MainWindow::on_selectButton_clicked()
     ui->hint->append(getSystemTime()+'\n'+"outputFile:"+path);
 }
 
-void MainWindow::on_singleButton_clicked()
-{
-    ui->hint->append("按键已移除");
-//    ui->progressBar->setValue(0);
-//    ui->singleButton->setEnabled(false);
-//    ui->batchButton->setEnabled(false);
-//    thread1->start();
-}
-
 void MainWindow::on_batchButton_clicked()
 {
     ui->progressBar->setValue(0);
+    ui->copySheet->setEnabled(false);
     ui->batchButton->setEnabled(false);
     thread2->start();
 }
@@ -98,8 +90,10 @@ void MainWindow::receiveMessage(const QString &str)
 {
     if(str=="single_finish"){
         ui->batchButton->setEnabled(true);
+        ui->copySheet->setEnabled(true);
     }else if(str=="batch_finish"){
         ui->batchButton->setEnabled(true);
+        ui->copySheet->setEnabled(true);
     }
     else
         ui->hint->append(str);
@@ -133,6 +127,7 @@ void MainWindow::on_toolButton_3_clicked()
 void MainWindow::on_batchStop_clicked()
 {
     thread2->stop();
+    thread1->stop();
 }
 
 void MainWindow::on_toolButton_2_clicked()
@@ -145,4 +140,12 @@ void MainWindow::on_toolButton_2_clicked()
         flag = flag==Qt::Checked?Qt::Unchecked:Qt::Checked;
         aItem->setCheckState(flag);//设置为选中
     }
+}
+
+void MainWindow::on_copySheet_clicked()
+{
+    ui->progressBar->setValue(0);
+    ui->copySheet->setEnabled(false);
+    ui->batchButton->setEnabled(false);
+    thread1->start();
 }

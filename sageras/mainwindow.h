@@ -3,8 +3,8 @@
 
 #include <QMainWindow>
 #include <ActiveQt/QAxObject>
-#include "excelhandle.h"
 #include "excelbatchhandle.h"
+#include "copythread.h"
 
 namespace Ui {
 class MainWindow;
@@ -22,8 +22,6 @@ private slots:
     void on_batchButton_clicked();
 
     void on_selectButton_clicked();
-
-    void on_singleButton_clicked();
 
     void on_openButton_clicked();
 
@@ -44,9 +42,11 @@ private slots:
     void on_toolButton_3_clicked();
 
     void on_batchStop_clicked();
+    void on_copySheet_clicked();
+
 private:
     Ui::MainWindow *ui;
-    ExcelHandel* thread1=NULL;
+    CopyThread* thread1=NULL;
     ExcelBatchHandel* thread2=NULL;
 };
 
