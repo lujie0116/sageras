@@ -20,10 +20,10 @@ void CopyThread::run()
     t.start();//将此时间设置为当前时间
 //    QString str = QString("%1->%2,thread id:%3").arg(__FILE__).arg(__FUNCTION__).arg((unsigned int)QThread::currentThreadId());
 //    send(str);
-//    if(!getdata()){
-//        emit message("batch_finish");
-//        return ;
-//    }
+    if(!getdata()){
+        emit message("batch_finish");
+        return ;
+    }
     if(!deal()){
         emit message("batch_finish");
         return ;
@@ -70,6 +70,7 @@ bool CopyThread::getdata(){
         return false;
     }
 
+    lessonNum = ui->lessonNum->text();
     sheet = ui->sheetName->text();
 
     dataStart = ui->dataCol->text();
@@ -82,14 +83,13 @@ bool CopyThread::deal(){
     //连接控件
     QAxObject* excel = new QAxObject();
     connectComponent(excel);
+
     int successcnt=0;
     int failcnt=0;
     int finishcnt=0;
     int col=stringToIntBy26Base(dataStart);
     int row=startRow.toInt();
-
-    QPosition idx(row,col);
-
+    int targetNum=0;
     //
     //1.获取标准模板headers,并保存到list
     QVariantList headers;
@@ -99,6 +99,7 @@ bool CopyThread::deal(){
     //3.每个file,读取header,映射,
     //
 
+    int rowStart=2;
     for(int i=0;i<inputFiles.size();i++){
         QString inputFile=inputPath+'\\'+inputFiles[i];
 
@@ -111,8 +112,9 @@ bool CopyThread::deal(){
             continue;
         }
 
-        //
-        if(!preProcess(inputFile,map,excel,sheet)){
+        //读取inputfile文件headerlist
+        QVariantList inputHeaderList;
+        if(!getHeaderList(inputFile, excel, inputHeaderList,targetNum)){
             failcnt++;
             msg = "文件:"+inputFile+"读取出错\n"+"成功"+QString::number(successcnt)+"个,失败"+QString::number(failcnt)+"个,剩余"+QString::number(inputFiles.size()-i-1)+"个";
             send(msg);
@@ -123,12 +125,17 @@ bool CopyThread::deal(){
 
         //MappingList,dataList
 
+        QList<int> mappingList;
+        if(!getListMap(headers,inputHeaderList,mappingList)){
+            failcnt++;
+            msg = "文件:"+inputFile+"表头不匹配\n"+"成功"+QString::number(successcnt)+"个,失败"+QString::number(failcnt)+"个,剩余"+QString::number(inputFiles.size()-i-1)+"个";
+            send(msg);
+            finishcnt=successcnt+failcnt;
+            emit progress(((float)finishcnt / inputFiles.size()) * 100);
+            continue;
+        }
 
-
-        QVariantList list;
-
-        dataStart=idx.trans(col);
-        if(processFile(outputFile,excel,map,dataStart,itemStart,startRow,sheet,inputFiles[i])){
+        if(copyData(inputFile,outputFile,excel,mappingList,rowStart,targetNum,lessonNum)){
             successcnt++;
             msg = "文件:"+inputFile+"导入成功\n"+"成功"+QString::number(successcnt)+"个,失败"+QString::number(failcnt)+"个,剩余"+QString::number(inputFiles.size()-i-1)+"个";
             send(msg);

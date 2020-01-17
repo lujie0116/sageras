@@ -29,6 +29,7 @@ private:
     QString inputPath="";
     QString outputFile="";
     QString sheet="";
+    QString lessonNum="";
     QString dataStart = "";
     QString itemStart = "";
     QString startRow = "";

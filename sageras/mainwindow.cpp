@@ -90,8 +90,10 @@ void MainWindow::receiveMessage(const QString &str)
 {
     if(str=="single_finish"){
         ui->batchButton->setEnabled(true);
+        ui->copySheet->setEnabled(true);
     }else if(str=="batch_finish"){
         ui->batchButton->setEnabled(true);
+        ui->copySheet->setEnabled(true);
     }
     else
         ui->hint->append(str);
